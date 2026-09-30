@@ -24,9 +24,13 @@ def adresse_ip(request: Request | None) -> str | None:
     if candidate is None and request.client:
         candidate = request.client.host
     try:
-        return str(ipaddress.ip_address(candidate)) if candidate else None
+        ip = ipaddress.ip_address(candidate) if candidate else None
     except ValueError:
         return None
+    # « ::ffff:203.0.113.7 » (IPv4 vue par une socket IPv6) → « 203.0.113.7 »
+    if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped:
+        ip = ip.ipv4_mapped
+    return str(ip) if ip else None
 
 
 def _nettoyer(details: dict[str, Any] | None) -> dict[str, Any] | None:

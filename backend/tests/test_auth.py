@@ -221,6 +221,17 @@ def test_ip_reelle_lue_derriere_le_proxy(client):
     assert str(ip) == "203.0.113.7"
 
 
+def test_ipv4_vue_en_ipv6_normalisee(client):
+    client.post(
+        "/api/auth/login",
+        json={"email": EMAIL, "mot_de_passe": MOT_DE_PASSE},
+        headers={**CSRF, "X-Forwarded-For": "::ffff:203.0.113.9"},
+    )
+    with SessionLocal() as db:
+        ip = db.scalar(select(Journal.adresse_ip).where(Journal.action == "CONNEXION"))
+    assert str(ip) == "203.0.113.9"
+
+
 def test_aucun_mot_de_passe_en_clair_ni_en_base_ni_dans_les_logs(client, caplog):
     caplog.set_level(logging.DEBUG)
     secret_tente = "Tentative-Secrete-987"  # noqa: S105
