@@ -60,7 +60,7 @@ class Monde:
     ventes: np.ndarray  # jours × couples
     stock_fin: np.ndarray  # jours × couples, stock en fin de journée
     remise: np.ndarray  # jours × produits, taux de remise en %
-    commandes: pd.DataFrame
+    commandes: pd.DataFrame  # brutes : date_arrivee + annulee (voir commandes_au)
     lignes_commande: pd.DataFrame
     greves: list[Greve]
 
@@ -89,6 +89,21 @@ class Monde:
                 for p in self.produits
                 for e in self.entrepots
             ]
+        )
+
+    def commandes_au(self, jour: date) -> pd.DataFrame:
+        """Commandes connues à la fin du jour donné, avec le statut visible ce jour-là.
+
+        Livrée si arrivée au plus tard ce jour ; annulée si annulée et échéance estimée passée ;
+        sinon en cours (date de livraison réelle inconnue).
+        """
+        c = self.commandes[self.commandes.date_achat <= jour]
+        livree = ~c.annulee & (c.date_arrivee <= jour)
+        annulee = c.annulee & (c.date_livraison_estimee <= jour)
+        statut = np.select([livree, annulee], ["LIVREE", "ANNULEE"], default="EN_COURS")
+        reelle = c.date_arrivee.where(livree, None).astype(object)
+        return c.drop(columns=["date_arrivee", "annulee"]).assign(
+            statut=statut, date_livraison_reelle=reelle
         )
 
     def index_jour(self, jour: date) -> int | None:
@@ -250,9 +265,7 @@ def construire_monde(aujourd_hui: date) -> Monde:
         for p, s in zip(produits, seuils, strict=True)
     ]
 
-    tables_commandes, tables_lignes = _tables_commandes(
-        commandes, groupes, produits, entrepots, aujourd_hui
-    )
+    tables_commandes, tables_lignes = _tables_commandes(commandes, groupes, produits, entrepots)
     return Monde(
         aujourd_hui=aujourd_hui,
         produits=produits,
@@ -271,28 +284,24 @@ def construire_monde(aujourd_hui: date) -> Monde:
     )
 
 
-def _tables_commandes(commandes, groupes, produits, entrepots, aujourd_hui):
-    """Statut vu le jour J : livrée (ou annulée) si l'échéance est passée, sinon en cours."""
+def _tables_commandes(commandes, groupes, produits, entrepots):
+    """Commandes brutes : arrivée réelle et annulation (statut calculé par Monde.commandes_au)."""
     delai = {f.id_fournisseur: f.delai_moyen_jours for f in FOURNISSEURS}
     code_f = {f.id_fournisseur: f.code_fournisseur for f in FOURNISSEURS}
     code_e = {e.id_entrepot: e.code_entrepot for e in entrepots}
     nb_e = len(entrepots)
-    hier_idx = (aujourd_hui - P.DATE_DEBUT).days - 1
     lignes_c, lignes_l = [], []
     for id_commande, (d, g, arrivee, annulee, lignes) in enumerate(commandes, start=1):
         f_id, e_id = groupes[g]
         date_achat = P.DATE_DEBUT + timedelta(days=d)
-        statut = ("ANNULEE" if annulee else "LIVREE") if arrivee <= hier_idx else "EN_COURS"
         lignes_c.append(
             {
                 "id_commande": id_commande,
                 "numero_commande": f"CF-{date_achat:%Y%m%d}-{code_f[f_id][2:]}-{code_e[e_id]}",
                 "date_achat": date_achat,
                 "date_livraison_estimee": date_achat + timedelta(days=delai[f_id]),
-                "date_livraison_reelle": (
-                    P.DATE_DEBUT + timedelta(days=arrivee) if statut == "LIVREE" else None
-                ),
-                "statut": statut,
+                "date_arrivee": P.DATE_DEBUT + timedelta(days=arrivee),
+                "annulee": annulee,
                 "id_fournisseur": f_id,
                 "code_fournisseur": code_f[f_id],
                 "id_entrepot": e_id,

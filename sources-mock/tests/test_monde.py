@@ -1,6 +1,6 @@
 """Le monde simulé : déterminisme, cohérence physique des stocks et saisonnalité visible (RG-07)."""
 
-from datetime import date
+from datetime import date, timedelta
 
 import numpy as np
 import pandas as pd
@@ -98,13 +98,25 @@ def test_des_ruptures_existent_sans_etre_la_norme(monde):
 
 
 def test_commandes_coherentes(monde):
-    c = monde.commandes
+    c = monde.commandes_au(monde.hier)
     assert c.numero_commande.is_unique
     assert set(c.statut) == {"LIVREE", "EN_COURS", "ANNULEE"}
     assert c.loc[c.statut == "LIVREE", "date_livraison_reelle"].notna().all()
     assert c.loc[c.statut != "LIVREE", "date_livraison_reelle"].isna().all()
+    assert (c.loc[c.statut == "LIVREE", "date_livraison_reelle"] <= monde.hier).all()
     assert (monde.lignes_commande.quantite_commandee > 0).all()
-    assert set(monde.lignes_commande.id_commande) == set(c.id_commande)
+    assert set(monde.lignes_commande.id_commande) == set(monde.commandes.id_commande)
+
+
+def test_statut_des_commandes_depend_du_jour_d_observation(monde):
+    livrees_hier = monde.commandes_au(monde.hier).query("statut == 'LIVREE'")
+    un_mois_avant = monde.commandes_au(monde.hier - timedelta(days=30)).set_index("id_commande")
+    livrees_recemment = livrees_hier[
+        livrees_hier.date_livraison_reelle > monde.hier - timedelta(days=30)
+    ]
+    anciennes = livrees_recemment[livrees_recemment.id_commande.isin(un_mois_avant.index)]
+    assert len(anciennes) > 0
+    assert (un_mois_avant.loc[anciennes.id_commande, "statut"] == "EN_COURS").all()
 
 
 def test_seuils_d_alerte_plausibles(monde):

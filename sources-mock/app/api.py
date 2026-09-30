@@ -136,7 +136,7 @@ def commandes(
 ) -> Page:
     """Portail Fournisseurs : lignes de commandes fournisseurs (une ligne par produit commandé)."""
     monde = monde_courant()
-    c = monde.commandes
+    c = monde.commandes_au(monde.hier)
     livree_depuis = c.date_livraison_reelle.notna() & (
         c.date_livraison_reelle.map(lambda d: d is not None and d >= modifie_depuis)
     )
