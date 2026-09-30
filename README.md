@@ -17,6 +17,7 @@ POC de plateforme de prédiction des stocks par Machine Learning (GLOBALRETAIL �
 ```bash
 cp .env.example .env
 npm run dev          # http://localhost:5173
+npm run seed         # données simulées (dans un autre terminal, une fois la stack démarrée)
 npm run share        # lien public à envoyer à l'équipe
 ```
 

@@ -24,11 +24,13 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-stockpredict}:${POSTGRES_PASSWORD:-stockpredict}@db:5432/${POSTGRES_DB:-stockpredict}
       SOURCES_BASE_URL: http://sources-mock:8100
+      SOURCES_API_KEY: ${SOURCES_API_KEY:-dev-mock-key}
       WATCHFILES_FORCE_POLLING: "true"
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - ./data:/data
     depends_on:
       db:
         condition: service_healthy
@@ -37,11 +39,17 @@ services:
     build: ./sources-mock
     command: uvicorn app.main:app --host 0.0.0.0 --port 8100 --reload
     environment:
+      MOCK_API_KEY: ${SOURCES_API_KEY:-dev-mock-key}
+      # Pannes permanentes simulées, ex. "purchase-orders=timeout" (parcours 2 du dossier)
+      MOCK_PANNES: ${MOCK_PANNES:-}
+      # Date « aujourd'hui » du monde simulé (vide = date du jour)
+      MOCK_DATE_REFERENCE: ${MOCK_DATE_REFERENCE:-}
       WATCHFILES_FORCE_POLLING: "true"
     ports:
       - "8100:8100"
     volumes:
       - ./sources-mock:/app
+      - ./data:/data
 
   frontend:
     build: ./frontend
