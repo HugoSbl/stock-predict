@@ -16,3 +16,4 @@ Argument : numéro de lot (ex. `3`).
 7. **Vérifier** chaque critère d'acceptation de l'issue (tests + démonstration réelle dans l'app). Ne pas déclarer terminé sans preuve.
 8. **Décisions** : tout arbitrage nouveau → entrée `D-xx` dans `docs/decisions.md` dans la même branche.
 9. **PR** : `gh pr create` avec `Closes #<numéro>`, la liste des critères cochés et comment tester.
+10. **Après fusion** : vérifier que l'issue est fermée (`gh issue view <numéro> --json state`) ; sinon `gh issue close <numéro> -c "Livré par #<PR>."` (le lien automatique ne s'est pas déclenché sur les PR #10 et #11).

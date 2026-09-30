@@ -20,7 +20,8 @@ export default defineConfig({
     // et Vite compare les suffixes littéralement.
     allowedHosts: ['.trycloudflare.com', '.trycloudflare.com.', '.ts.net', '.ts.net.'],
     // Un seul port exposé : le front relaie /api vers FastAPI
-    proxy: { '/api': { target: apiTarget, changeOrigin: true } },
+    // xfwd : transmet X-Forwarded-For pour journaliser l'IP réelle du client (RG-14)
+    proxy: { '/api': { target: apiTarget, changeOrigin: true, xfwd: true } },
     // Les événements fichiers ne traversent pas toujours les bind mounts Docker
     watch: process.env.VITE_USE_POLLING ? { usePolling: true, interval: 300 } : undefined,
   },

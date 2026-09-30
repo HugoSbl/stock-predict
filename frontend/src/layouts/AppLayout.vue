@@ -3,7 +3,9 @@ import {
   Bell,
   Boxes,
   Download,
+  KeyRound,
   LayoutDashboard,
+  LogOut,
   RefreshCw,
   ScrollText,
   TrendingUp,
@@ -11,16 +13,20 @@ import {
   Users,
 } from '@lucide/vue'
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { LIBELLES_ROLES } from '@/auth/droits'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { PAYS, usePaysStore } from '@/stores/pays'
+import { useSessionStore } from '@/stores/session'
 
 const route = useRoute()
+const router = useRouter()
 const pays = usePaysStore()
+const session = useSessionStore()
 
-// Menu (D-16). Le filtrage par rôle arrive avec le lot 2.
-const navigation = [
+// Menu (D-16), filtré selon les rôles déclarés sur les routes (matrice RG-13)
+const menu = [
   { to: '/', label: 'Tableau de bord', icon: LayoutDashboard },
   { to: '/stocks', label: 'Stocks', icon: Boxes },
   { to: '/previsions', label: 'Prévisions', icon: TrendingUp },
@@ -31,7 +37,22 @@ const navigation = [
   { to: '/journaux', label: 'Journaux', icon: ScrollText },
 ]
 
+const navigation = computed(() =>
+  menu.filter((item) => {
+    const cible = router.resolve(item.to)
+    return session.role !== null && (cible.meta.roles ?? []).includes(session.role)
+  }),
+)
+
 const titre = computed(() => route.meta.title)
+const nomAffiche = computed(() =>
+  session.utilisateur ? `${session.utilisateur.prenom} ${session.utilisateur.nom.charAt(0)}.` : '',
+)
+
+async function seDeconnecter() {
+  await session.deconnecter()
+  await router.replace({ name: 'connexion' })
+}
 </script>
 
 <template>
@@ -63,7 +84,10 @@ const titre = computed(() => route.meta.title)
           </li>
         </ul>
       </nav>
-      <p class="border-t border-sidebar-border px-5 py-4 text-xs opacity-75">Non connecté</p>
+      <div v-if="session.utilisateur" class="border-t border-sidebar-border px-5 py-4 text-xs">
+        <p class="font-medium text-white">{{ nomAffiche }}</p>
+        <p class="opacity-75">{{ LIBELLES_ROLES[session.utilisateur.role] }}</p>
+      </div>
     </aside>
 
     <div class="flex min-w-0 flex-1 flex-col bg-muted/40">
@@ -83,6 +107,14 @@ const titre = computed(() => route.meta.title)
 
         <Button variant="ghost" size="icon" aria-label="Alertes (bientôt disponible)" disabled>
           <Bell aria-hidden="true" />
+        </Button>
+        <Button as-child variant="ghost" size="icon">
+          <RouterLink to="/mot-de-passe" aria-label="Changer mon mot de passe" title="Changer mon mot de passe">
+            <KeyRound aria-hidden="true" />
+          </RouterLink>
+        </Button>
+        <Button variant="ghost" size="icon" aria-label="Se déconnecter" title="Se déconnecter" @click="seDeconnecter">
+          <LogOut aria-hidden="true" />
         </Button>
       </header>
 
