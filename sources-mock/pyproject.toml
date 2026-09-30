@@ -1,0 +1,30 @@
+[project]
+name = "stockpredict-sources-mock"
+version = "0.1.0"
+description = "StockPredict — API sources simulées (ERP Ventes, WMS Stocks, Portail Fournisseurs) et générateur de données (D-14)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.142.2",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S", "SIM"]
+ignore = ["S101"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.13.1",
+    "pytest>=9.1.1",
+    "ruff>=0.16.9",
+]
