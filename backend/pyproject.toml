@@ -1,0 +1,38 @@
+[project]
+name = "stockpredict-backend"
+version = "0.1.0"
+description = "StockPredict — API REST"
+authors = [
+    { name = "Hugo Sablot", email = "hugo.sablot@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20.0",
+    "fastapi>=0.142.2",
+    "psycopg[binary]>=3.3.6",
+    "pydantic-settings>=2.15.0",
+    "sqlalchemy>=2.0.40",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.13.1",
+    "pip-audit>=2.10.1",
+    "pytest>=9.1.1",
+    "ruff>=0.16.9",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S", "SIM"]
+ignore = ["S101"]  # assert autorisé dans les tests
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
