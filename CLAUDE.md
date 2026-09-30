@@ -8,6 +8,7 @@ Plateforme de prédiction des stocks (GLOBALRETAIL, Supply Chain). POC sur 2 pay
 - Règles de gestion RG-01 → RG-15 : @docs/regles-de-gestion.md
 - Décisions d'architecture et arbitrages (complètent le dossier) : @docs/decisions.md
 - Découpage en lots et dépendances : @docs/lots.md
+- Données simulées, seed et contrat des API sources : @docs/donnees.md
 - Dossier de conception complet : `docs/conception/Dossier_conception_StockPredict_v2.pdf`
 - Schéma physique : modèles SQLAlchemy `backend/app/models/` + migrations Alembic (issus du MLD §3.2 + décisions, cf. D-11)
 
@@ -59,6 +60,7 @@ Pré-requis : Docker Desktop, Node 22, `uv` (`brew install uv`), `cloudflared` p
 | `npm run dev` | Démarre db + backend + sources-mock + frontend (hot reload partout) |
 | `npm run share` | URL publique vers le front (proxy `/api` inclus) pour faire tester l'équipe |
 | `npm run gen:api` | Régénère `frontend/src/api/schema.d.ts` depuis l'OpenAPI (backend démarré). **À lancer et commiter après tout changement d'API.** |
+| `npm run seed` | (Re)charge ~2,5 M lignes de données simulées en ~20 s (idempotent). **À lancer après le premier `npm run dev`.** |
 | `npm test` | Tests backend + sources-mock (dans les conteneurs) + type-check front |
 | `npm run lint` | ruff check + format --check |
 | `npm run migration -- "message"` | Génère une migration Alembic (autogenerate) |
@@ -67,4 +69,5 @@ Pré-requis : Docker Desktop, Node 22, `uv` (`brew install uv`), `cloudflared` p
 URLs locales : app http://localhost:5173 · Swagger http://localhost:5173/api/docs · sources-mock http://localhost:8100/docs · Postgres localhost:5432.
 
 Ajout d'une dépendance : `cd backend && uv add <pkg>` (ou `npm i` dans `frontend/`), puis `docker compose up --build -d` pour reconstruire l'image.
-Tests Python hors Docker : `cd backend && uv run pytest` (nécessite la base de `npm run dev`).
+Tests Python hors Docker : `cd backend && uv run pytest` (nécessite la base de `npm run dev` ; les tests utilisent une base dédiée `stockpredict_test`, recréée à chaque session).
+Un test vérifie que modèles et migrations sont synchronisés : après toute modification de `app/models/`, générer la migration.

@@ -106,3 +106,27 @@ Vite fait proxy de `/api` vers FastAPI → un seul port (5173) à exposer via tu
 - Partage : `npm run share` = tunnel Cloudflare éphémère sans compte (URL change à chaque lancement) ; `SHARE_TUNNEL=tailscale npm run share` pour une URL stable.
 - Healthcheck `GET /api/health` : 200 si la base répond, 503 sinon.
 - En Docker, le rechargement utilise le polling (`WATCHFILES_FORCE_POLLING`, `VITE_USE_POLLING`) : les événements fichiers des bind mounts macOS ne sont pas fiables.
+
+## D-19 — Clés naturelles et grain des ventes
+Les sources parlent en codes, pas en identifiants internes : `entrepot.code_entrepot`, `fournisseur.code_fournisseur`,
+`commande_fournisseur.numero_commande` sont uniques ; `produit.reference` l'était déjà.
+Une vente est un **agrégat journalier** par produit × entrepôt : unique sur (date_vente, id_produit, id_entrepot).
+C'est la définition du « doublon strict » de RG-02.
+
+## D-20 — Table `stock_quotidien`
+Relevé de stock de fin de journée envoyé par le WMS (date_releve, produit, entrepôt, quantité). `stock` = dernier relevé.
+Nécessaire pour la courbe historique de la maquette 4 et pour repérer les ventes censurées (stock à 0).
+Ce n'est pas une table d'historisation applicative au sens du §1.2 : c'est une donnée source.
+
+## D-21 — Calendrier : vacances par pays
+`calendrier` : `vacances_fr` et `vacances_de` remplacent le booléen unique du MLD (les dates diffèrent) ; ajout de `annee`.
+
+## D-22 — Fournisseur habituel du produit
+`produit.id_fournisseur_habituel` (FK nullable) : délai d'approvisionnement utilisé par la recommandation (D-06).
+
+## D-23 — Données de développement : monde simulé et seed
+Voir `docs/donnees.md`. Le seed charge un export CSV propre par `COPY` en une transaction ; les triggers de clés
+étrangères sont suspendus pendant le chargement (`session_replication_role = replica`, superutilisateur requis,
+sinon chargement classique) puis l'intégrité est revérifiée en une passe ensembliste : 87 s → 10 s.
+`vente` est partitionnée par mois (fonction `creer_partitions_vente(debut, fin)`) avec une partition par défaut
+comme filet de sécurité. Les énumérations sont des VARCHAR + CHECK nommés `ck_<table>_<colonne>`.

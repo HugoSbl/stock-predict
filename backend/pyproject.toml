@@ -34,5 +34,9 @@ target-version = "py312"
 select = ["E", "F", "I", "UP", "B", "S", "SIM"]
 ignore = ["S101"]  # assert autorisé dans les tests
 
+[tool.ruff.lint.per-file-ignores]
+"alembic/versions/*" = ["E501"]  # code généré
+"tests/*" = ["E501"]  # SQL lisible dans les tests
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
