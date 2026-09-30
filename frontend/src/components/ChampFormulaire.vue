@@ -35,7 +35,8 @@ defineExpose({ focus: () => (champ.value?.$el as HTMLInputElement | undefined)?.
 </script>
 
 <template>
-  <div class="grid gap-1.5">
+  <!-- content-start : pas d'étirement vertical quand la cellule voisine de la grille est plus haute -->
+  <div class="grid content-start gap-1.5">
     <Label :for="id" class="text-sm font-medium">
       {{ label }}<span v-if="requis" aria-hidden="true" class="text-status-critical"> *</span>
     </Label>

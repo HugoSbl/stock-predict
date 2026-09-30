@@ -5,6 +5,7 @@ import Connexion from '@/pages/Connexion.vue'
 import EnConstruction from '@/pages/EnConstruction.vue'
 import MotDePasse from '@/pages/MotDePasse.vue'
 import TableauDeBord from '@/pages/TableauDeBord.vue'
+import Utilisateurs from '@/pages/Utilisateurs.vue'
 import { surveillerExpiration, useSessionStore } from '@/stores/session'
 
 declare module 'vue-router' {
@@ -31,7 +32,7 @@ export const routes: RouteRecordRaw[] = [
   { path: '/alertes', name: 'alertes', component: EnConstruction, meta: { title: 'Alertes', lot: 5, roles: TOUS_LES_ROLES } },
   { path: '/synchronisation', name: 'synchronisation', component: EnConstruction, meta: { title: 'Synchronisation', lot: 3, roles: TOUS_LES_ROLES } },
   { path: '/exports', name: 'exports', component: EnConstruction, meta: { title: 'Exports', lot: 7, roles: TOUS_LES_ROLES } },
-  { path: '/utilisateurs', name: 'utilisateurs', component: EnConstruction, meta: { title: 'Utilisateurs', lot: 7, roles: ADMIN } },
+  { path: '/utilisateurs', name: 'utilisateurs', component: Utilisateurs, meta: { title: 'Utilisateurs', roles: ADMIN } },
   { path: '/journaux', name: 'journaux', component: EnConstruction, meta: { title: 'Journaux', lot: 7, roles: ADMIN } },
   { path: '/connexion', name: 'connexion', component: Connexion, meta: { title: 'Connexion', public: true, pleinEcran: true } },
   { path: '/mot-de-passe', name: 'mot-de-passe', component: MotDePasse, meta: { title: 'Changer mon mot de passe', roles: TOUS_LES_ROLES, pleinEcran: true } },

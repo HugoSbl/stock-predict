@@ -65,7 +65,8 @@ Pré-requis : Docker Desktop, Node 22, `uv` (`brew install uv`), `cloudflared` p
 | `npm run dev` | Démarre db + backend + sources-mock + frontend (hot reload partout) |
 | `npm run share` | URL publique vers le front (proxy `/api` inclus) pour faire tester l'équipe |
 | `npm run gen:api` | Régénère `frontend/src/api/schema.d.ts` depuis l'OpenAPI (backend démarré). **À lancer et commiter après tout changement d'API.** |
-| `npm run seed` | (Re)charge ~2,5 M lignes de données simulées en ~20 s (idempotent) + comptes de démo. **À lancer après le premier `npm run dev`.** |
+| `npm run seed` | (Re)charge ~2,5 M lignes de données simulées en ~20 s (idempotent). **À lancer après le premier `npm run dev`.** |
+| `npm run creer-admin` | Crée un compte ADMIN (saisie interactive). À faire une fois sur une base neuve ; l'admin crée ensuite les autres comptes dans l'écran Utilisateurs (D-29, D-30). |
 | `npm test` | Tests backend + sources-mock (dans les conteneurs) + type-check front |
 | `npm run lint` | ruff check + format --check |
 | `npm run migration -- "message"` | Génère une migration Alembic (autogenerate) |

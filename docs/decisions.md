@@ -152,11 +152,25 @@ Le changement de mot de passe imposé (D-10) bloque toutes les routes métier (4
 
 ## D-27 — Politique de mot de passe et comptes de démonstration
 Au moins 12 caractères, mélangeant lettres et chiffres ou symboles ; différent de l'actuel. Hash argon2id.
-Comptes de démo (personnages du §2.4) créés par `npm run seed` si `DEMO_MOT_DE_PASSE` est défini :
-Paul Bernard (RESPONSABLE), Sarah Lefèvre (ANALYSTE), Steven Laurent (ADMIN), domaine `globalretail.example`.
+Comptes de démo (personnages du §2.4) : **option désactivée par défaut** (voir D-30). Créés par `npm run seed`
+uniquement si `DEMO_MOT_DE_PASSE` est renseigné : Paul Bernard (RESPONSABLE), Sarah Lefèvre (ANALYSTE),
+Steven Laurent (ADMIN), domaine `globalretail.example`. Pratique pour préparer une démo, jamais en production.
 
 ## D-28 — Actions journalisées (RG-14)
 Codes d'action en MAJUSCULES_SNAKE : `CONNEXION`, `CONNEXION_ECHEC`, `COMPTE_VERROUILLE`,
 `CONNEXION_REFUSEE_VERROUILLAGE`, `DECONNEXION`, `MOT_DE_PASSE_MODIFIE`, `MOT_DE_PASSE_ECHEC`,
-`INITIALISATION_DONNEES`, `COMPTES_DEMO_INITIALISES`. Toujours via `journaliser()` (masque les clés sensibles,
+`INITIALISATION_DONNEES`, `COMPTES_DEMO_INITIALISES`, `ADMIN_CREE_EN_LIGNE_DE_COMMANDE`, `UTILISATEUR_CREE`. Toujours via `journaliser()` (masque les clés sensibles,
 IP réelle via `X-Forwarded-For`). Les lots suivants ajoutent leurs codes ici.
+
+## D-29 — Premier administrateur : `npm run creer-admin`
+Une base vide n'a aucun compte. Le premier ADMIN est créé en ligne de commande (`python -m app.creer_admin`) :
+saisie interactive, mot de passe sans écho, jamais dans le code ni dans `.env`, création journalisée
+(`ADMIN_CREE_EN_LIGNE_DE_COMMANDE`). La même commande sert à rétablir un accès administrateur perdu.
+Pas d'inscription libre (sinon n'importe qui pourrait se donner des droits) ni d'auto-promotion du premier inscrit.
+
+## D-30 — Comptes créés par l'administrateur (conforme UC-01)
+Choix de l'équipe : pas d'inscription en libre-service. L'ADMIN crée chaque compte (prénom, nom, e-mail, **rôle**)
+depuis l'écran Utilisateurs (`POST /api/utilisateurs`). Un **mot de passe temporaire** de 16 caractères est
+généré (module `secrets`), affiché **une seule fois** à l'admin et jamais stocké en clair ; `doit_changer_mdp = true`
+impose de le changer à la première connexion (D-10). Création journalisée `UTILISATEUR_CREE` au nom de l'admin.
+E-mail unique sans tenir compte de la casse (409 sinon). Modifier un rôle, désactiver, réinitialiser : lot 7.

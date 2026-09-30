@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter, FastAPI
 
-from app.api import auth, health
+from app.api import auth, health, utilisateurs
 from app.config import SECRET_JWT_DEV, settings
 from app.securite.csrf import ProtectionCsrf
 
@@ -29,4 +29,5 @@ app.include_router(publiques)
 
 # Routes métier : chaque route DOIT déclarer ses rôles avec exiger_role(...) (RG-13, D-26)
 metier = APIRouter(prefix="/api")
+metier.include_router(utilisateurs.router)
 app.include_router(metier)

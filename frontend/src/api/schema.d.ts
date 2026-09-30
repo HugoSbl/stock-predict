@@ -92,6 +92,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/utilisateurs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lister */
+        get: operations["lister_api_utilisateurs_get"];
+        put?: never;
+        /** Creer */
+        post: operations["creer_api_utilisateurs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -112,6 +130,28 @@ export interface components {
             email: string;
             /** Mot De Passe */
             mot_de_passe: string;
+        };
+        /** CreationUtilisateurIn */
+        CreationUtilisateurIn: {
+            /** Prenom */
+            prenom: string;
+            /** Nom */
+            nom: string;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            role: components["schemas"]["Role"];
+        };
+        /** CreationUtilisateurOut */
+        CreationUtilisateurOut: {
+            utilisateur: components["schemas"]["UtilisateurAdminOut"];
+            /**
+             * Mot De Passe Temporaire
+             * @description Affiché une seule fois pour être transmis ; jamais stocké en clair.
+             */
+            mot_de_passe_temporaire: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -138,6 +178,24 @@ export interface components {
          * @enum {string}
          */
         Role: "RESPONSABLE" | "ANALYSTE" | "ADMIN";
+        /** UtilisateurAdminOut */
+        UtilisateurAdminOut: {
+            /** Id Utilisateur */
+            id_utilisateur: number;
+            /** Nom */
+            nom: string;
+            /** Prenom */
+            prenom: string;
+            /** Email */
+            email: string;
+            role: components["schemas"]["Role"];
+            /** Actif */
+            actif: boolean;
+            /** Doit Changer Mdp */
+            doit_changer_mdp: boolean;
+            /** Derniere Connexion */
+            derniere_connexion: string | null;
+        };
         /** UtilisateurOut */
         UtilisateurOut: {
             /** Id Utilisateur */
@@ -314,6 +372,79 @@ export interface operations {
             };
             /** @description Mot de passe actuel incorrect ou politique non respectée */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lister_api_utilisateurs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                stockpredict_session?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UtilisateurAdminOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    creer_api_utilisateurs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                stockpredict_session?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreationUtilisateurIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationUtilisateurOut"];
+                };
+            };
+            /** @description Adresse e-mail déjà utilisée */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

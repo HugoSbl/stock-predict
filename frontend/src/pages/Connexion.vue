@@ -118,6 +118,9 @@ async function soumettre() {
           <p v-show="aideOubliVisible" id="aide-oubli" class="mt-2 text-sm text-muted-foreground">
             Contactez votre administrateur : il réinitialisera votre mot de passe.
           </p>
+          <p class="mt-3 text-xs text-muted-foreground">
+            Pas encore de compte ? Les comptes sont créés par votre administrateur.
+          </p>
         </div>
       </section>
 
