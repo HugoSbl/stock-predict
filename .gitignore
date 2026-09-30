@@ -1,0 +1,30 @@
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+dist/
+
+# Data / modèles générés
+data/
+*.joblib
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Claude (local uniquement)
+.claude/settings.local.json
