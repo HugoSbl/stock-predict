@@ -5,6 +5,9 @@ description = "StockPredict — API sources simulées (ERP Ventes, WMS Stocks, P
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.142.2",
+    "holidays>=0.105",
+    "numpy>=2.5.3",
+    "pandas>=3.0.6",
     "uvicorn[standard]>=0.54.0",
 ]
 
@@ -25,6 +28,7 @@ testpaths = ["tests"]
 [dependency-groups]
 dev = [
     "httpx2>=2.13.1",
+    "matplotlib>=3.11.2",
     "pytest>=9.1.1",
     "ruff>=0.16.9",
 ]
