@@ -1,0 +1,19 @@
+{
+  "name": "stockpredict",
+  "private": true,
+  "description": "Raccourcis de développement StockPredict (voir CLAUDE.md)",
+  "scripts": {
+    "dev": "docker compose up --build",
+    "down": "docker compose down",
+    "logs": "docker compose logs -f",
+    "share": "node scripts/share.mjs",
+    "gen:api": "npm --prefix frontend run gen:api",
+    "test": "npm run test:back && npm run test:mock && npm run type-check",
+    "test:back": "docker compose exec backend pytest -q",
+    "test:mock": "docker compose exec sources-mock pytest -q",
+    "type-check": "npm --prefix frontend run type-check",
+    "lint": "docker compose exec backend ruff check . && docker compose exec backend ruff format --check . && docker compose exec sources-mock ruff check .",
+    "migrate": "docker compose exec backend alembic upgrade head",
+    "migration": "docker compose exec backend alembic revision --autogenerate -m"
+  }
+}

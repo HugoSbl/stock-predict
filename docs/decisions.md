@@ -65,7 +65,8 @@ Pas d'envoi d'e-mail au POC. Le lien affiche « Contactez votre administrateur �
 
 ## D-11 — Back-end : FastAPI
 FastAPI retenu (pas DRF) : async, OpenAPI natif pour générer le client TS, léger. SQLAlchemy 2 + Alembic.
-La migration initiale exécute `db/mpd_stockpredict.sql` ; les amendements (D-01 à D-10) sont des migrations suivantes.
+Pas de script SQL brut du MPD disponible : le schéma est écrit en **modèles SQLAlchemy** à partir du MLD (§3.2 du dossier) en intégrant directement D-01 à D-10, puis généré en migrations Alembic.
+Ce qui ne s'exprime pas en ORM (partitionnement de `vente` par plage sur `date_vente`, index partiels, GIN sur JSONB) est écrit en `op.execute(...)` dans les migrations.
 
 ## D-12 — Session : JWT en cookie httpOnly
 JWT (8 h) dans un cookie `httpOnly; Secure; SameSite=Strict` — jamais en localStorage (XSS).
@@ -97,3 +98,11 @@ Les entrées non autorisées pour le rôle sont masquées (et refusées côté s
 
 ## D-17 — Dev en direct
 Vite fait proxy de `/api` vers FastAPI → un seul port (5173) à exposer via tunnel (`npm run share`).
+
+## D-18 — Outillage du socle (lot 0)
+- TypeScript 5.9 côté front (openapi-typescript n'accepte pas encore TS 6).
+- Icônes : `@lucide/vue` (celle installée par shadcn-vue), pas `lucide-vue-next`.
+- Tests FastAPI : `httpx2` (remplace `httpx`, déprécié par Starlette pour le TestClient).
+- Partage : `npm run share` = tunnel Cloudflare éphémère sans compte (URL change à chaque lancement) ; `SHARE_TUNNEL=tailscale npm run share` pour une URL stable.
+- Healthcheck `GET /api/health` : 200 si la base répond, 503 sinon.
+- En Docker, le rechargement utilise le polling (`WATCHFILES_FORCE_POLLING`, `VITE_USE_POLLING`) : les événements fichiers des bind mounts macOS ne sont pas fiables.
