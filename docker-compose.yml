@@ -1,0 +1,60 @@
+# Environnement de développement : hot reload partout, un seul port à partager (5173, D-17).
+name: stockpredict
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-stockpredict}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-stockpredict}
+      POSTGRES_DB: ${POSTGRES_DB:-stockpredict}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  backend:
+    build: ./backend
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-stockpredict}:${POSTGRES_PASSWORD:-stockpredict}@db:5432/${POSTGRES_DB:-stockpredict}
+      SOURCES_BASE_URL: http://sources-mock:8100
+      WATCHFILES_FORCE_POLLING: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  sources-mock:
+    build: ./sources-mock
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8100 --reload
+    environment:
+      WATCHFILES_FORCE_POLLING: "true"
+    ports:
+      - "8100:8100"
+    volumes:
+      - ./sources-mock:/app
+
+  frontend:
+    build: ./frontend
+    environment:
+      API_PROXY_TARGET: http://backend:8000
+      VITE_USE_POLLING: "true"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  db-data:
