@@ -15,8 +15,10 @@ export default defineConfig({
     host: true,
     port: 5173,
     strictPort: true,
-    // Domaines des tunnels de démo (D-17) : cloudflared (quick tunnel) et Tailscale Funnel
-    allowedHosts: ['.trycloudflare.com', '.ts.net'],
+    // Domaines des tunnels de démo (D-17) : cloudflared (quick tunnel) et Tailscale Funnel.
+    // Variantes avec point final : certains navigateurs envoient le nom DNS complet (« host.com. »),
+    // et Vite compare les suffixes littéralement.
+    allowedHosts: ['.trycloudflare.com', '.trycloudflare.com.', '.ts.net', '.ts.net.'],
     // Un seul port exposé : le front relaie /api vers FastAPI
     proxy: { '/api': { target: apiTarget, changeOrigin: true } },
     // Les événements fichiers ne traversent pas toujours les bind mounts Docker
