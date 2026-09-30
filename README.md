@@ -14,4 +14,10 @@ POC de plateforme de prédiction des stocks par Machine Learning (GLOBALRETAIL �
 
 ## Démarrage
 
-_Instructions ajoutées par le lot 0._
+```bash
+cp .env.example .env
+npm run dev          # http://localhost:5173
+npm run share        # lien public à envoyer à l'équipe
+```
+
+Toutes les commandes : section **Commandes** de [`CLAUDE.md`](CLAUDE.md).
