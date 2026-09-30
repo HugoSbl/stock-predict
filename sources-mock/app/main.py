@@ -1,12 +1,24 @@
-"""API sources simulées (D-14).
+"""API sources simulées (D-14) : ERP Ventes, WMS Stocks, Portail Fournisseurs.
 
-Squelette du lot 0 : les endpoints métier (/api/v1/sales, /stock-levels, /purchase-orders)
-et le générateur de données arrivent au lot 1.
+Documentation interactive : /docs. Authentification : `Authorization: Bearer <MOCK_API_KEY>`.
 """
+
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-app = FastAPI(title="StockPredict — sources simulées", version="0.1.0")
+from app.api import router
+from app.etat import monde_courant
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    monde_courant()  # construit le monde au démarrage plutôt qu'à la première requête
+    yield
+
+
+app = FastAPI(title="StockPredict — sources simulées", version="0.2.0", lifespan=lifespan)
+app.include_router(router)
 
 
 @app.get("/health")
