@@ -17,7 +17,9 @@ from pathlib import Path
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
 
-from app.db import Base, engine
+from app.comptes_demo import creer_comptes_demo
+from app.config import settings
+from app.db import Base, SessionLocal, engine
 from app.models import Journal, SourceApi
 from app.models.enums import TypeDonneesSource
 
@@ -233,6 +235,10 @@ def main() -> None:
     print(f"Seed chargé en {time.monotonic() - debut:.1f} s :")
     for table, n in comptes.items():
         print(f"  {table:<22} {n:>10,} lignes".replace(",", " "))
+    if settings.demo_mot_de_passe:
+        with SessionLocal() as db:
+            emails = creer_comptes_demo(db, settings.demo_mot_de_passe)
+        print(f"Comptes de démonstration (mot de passe : DEMO_MOT_DE_PASSE) : {', '.join(emails)}")
 
 
 if __name__ == "__main__":

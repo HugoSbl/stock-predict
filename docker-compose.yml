@@ -25,6 +25,9 @@ services:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-stockpredict}:${POSTGRES_PASSWORD:-stockpredict}@db:5432/${POSTGRES_DB:-stockpredict}
       SOURCES_BASE_URL: http://sources-mock:8100
       SOURCES_API_KEY: ${SOURCES_API_KEY:-dev-mock-key}
+      JWT_SECRET: ${JWT_SECRET:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      DEMO_MOT_DE_PASSE: ${DEMO_MOT_DE_PASSE:-}
       WATCHFILES_FORCE_POLLING: "true"
     ports:
       - "8000:8000"

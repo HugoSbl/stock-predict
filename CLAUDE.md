@@ -39,7 +39,12 @@ docs/           règles, décisions, lots, dossier de conception
 
 - Nommage **en français** (métier et code applicatif), conforme au MLD (tables/colonnes : `produit`, `entrepot`, `quantite_stock`…), sans accents dans les identifiants. Les termes techniques standard restent en anglais (`router`, `get_db`, `health`…). Textes UI en français.
 - Front ↔ back : uniquement via l'API REST `/api/...`. Le client TS est généré depuis l'OpenAPI FastAPI (`npm run gen:api`) — ne jamais écrire les types d'API à la main.
-- Chaque endpoint vérifie le rôle côté serveur, refus par défaut (RG-13). Toute action significative écrit dans `journal` (RG-14).
+- **Sécurité des routes (RG-13, D-26)** : toute route `/api` métier déclare ses rôles, sinon la CI échoue :
+  `@router.get("/stocks", dependencies=[Depends(exiger_role(*TOUS_LES_ROLES))])` ou, pour récupérer l'utilisateur,
+  `utilisateur: Annotated[Utilisateur, Depends(exiger_role(Role.ADMIN))]` (`app/securite/dependances.py`).
+  Côté front, chaque route déclare `meta.roles` (`src/router/index.ts`). Le front masque, le serveur décide.
+- **Journal (RG-14, D-28)** : toute action significative appelle `journaliser(db, "CODE_ACTION", request=..., id_utilisateur=..., details=...)` (`app/securite/journal.py`) ; jamais de secret dans `details`.
+- **Formulaires** : utiliser `src/components/ChampFormulaire.vue` (label, aide et erreur reliés pour le RGAA).
 - SQL toujours paramétré (ORM). Aucun secret dans le repo (`.env`, voir `.env.example`).
 - Accessibilité RGAA : statut jamais porté par la seule couleur, graphiques doublés d'un tableau, labels explicites.
 
@@ -61,6 +66,7 @@ Pré-requis : Docker Desktop, Node 22, `uv` (`brew install uv`), `cloudflared` p
 | `npm run share` | URL publique vers le front (proxy `/api` inclus) pour faire tester l'équipe |
 | `npm run gen:api` | Régénère `frontend/src/api/schema.d.ts` depuis l'OpenAPI (backend démarré). **À lancer et commiter après tout changement d'API.** |
 | `npm run seed` | (Re)charge ~2,5 M lignes de données simulées en ~20 s (idempotent). **À lancer après le premier `npm run dev`.** |
+| `npm run creer-admin` | Crée un compte ADMIN (saisie interactive). À faire une fois sur une base neuve ; l'admin crée ensuite les autres comptes dans l'écran Utilisateurs (D-29, D-30). |
 | `npm test` | Tests backend + sources-mock (dans les conteneurs) + type-check front |
 | `npm run lint` | ruff check + format --check |
 | `npm run migration -- "message"` | Génère une migration Alembic (autogenerate) |

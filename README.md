@@ -21,4 +21,8 @@ npm run seed         # données simulées (dans un autre terminal, une fois la s
 npm run share        # lien public à envoyer à l'équipe
 ```
 
+Comptes de démonstration (mot de passe : `DEMO_MOT_DE_PASSE` du `.env`) :
+`paul.bernard@globalretail.example` (Responsable), `sarah.lefevre@globalretail.example` (Analyste),
+`steven.laurent@globalretail.example` (Admin).
+
 Toutes les commandes : section **Commandes** de [`CLAUDE.md`](CLAUDE.md).

@@ -15,6 +15,7 @@
     "lint": "docker compose exec backend ruff check . && docker compose exec backend ruff format --check . && docker compose exec sources-mock ruff check .",
     "migrate": "docker compose exec backend alembic upgrade head",
     "migration": "docker compose exec backend alembic revision --autogenerate -m",
-    "seed": "docker compose exec sources-mock python -m app.export /data/seed && docker compose exec backend python -m app.seed /data/seed"
+    "seed": "docker compose exec sources-mock python -m app.export /data/seed && docker compose exec backend python -m app.seed /data/seed",
+    "creer-admin": "docker compose exec backend python -m app.creer_admin"
   }
 }

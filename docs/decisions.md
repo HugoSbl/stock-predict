@@ -130,3 +130,47 @@ Voir `docs/donnees.md`. Le seed charge un export CSV propre par `COPY` en une tr
 sinon chargement classique) puis l'intégrité est revérifiée en une passe ensembliste : 87 s → 10 s.
 `vente` est partitionnée par mois (fonction `creer_partitions_vente(debut, fin)`) avec une partition par défaut
 comme filet de sécurité. Les énumérations sont des VARCHAR + CHECK nommés `ck_<table>_<colonne>`.
+
+## D-24 — Cookie de session
+Nom `stockpredict_session`, `HttpOnly`, `SameSite=Strict`, `Path=/api`, durée 8 h (cookie et jeton).
+`Secure` piloté par `COOKIE_SECURE` : `false` en dev (http://localhost), `true` dès que l'app est servie en HTTPS
+hors localhost. Jeton JWT HS256 signé par `JWT_SECRET` (jamais commité ; un secret de dev est signalé au démarrage).
+Le jeton ne porte que l'identifiant : rôle et statut actif sont relus en base à chaque requête (effet immédiat).
+
+## D-25 — Échecs de connexion et verrouillage
+Réponse **générique** `401 Identifiants incorrects` (e-mail inconnu, compte inactif, mauvais mot de passe), avec un
+temps de réponse constant (hash factice vérifié si l'e-mail est inconnu). Le motif réel n'est que dans le journal.
+Au 5e échec consécutif : `verrouille_jusqu_a = maintenant + 15 min`, compteur remis à 0, `COMPTE_VERROUILLE` journalisé.
+Pendant le verrouillage : `423` et message explicite, **sans vérifier le mot de passe** (le brute-force ne progresse pas).
+Une connexion réussie remet le compteur à 0. E-mail comparé sans tenir compte de la casse.
+
+## D-26 — Refus par défaut garanti par un test
+Routes publiques : liste fermée dans `tests/test_controle_acces.py` (`/api/health`, `/api/auth/*`). Toute autre route
+`/api/...` doit déclarer ses rôles avec `Depends(exiger_role(...))`, sinon la CI échoue. Côté front, chaque route
+déclare `meta.roles` ; absent = refusé. Le front masque, **le serveur décide**.
+Le changement de mot de passe imposé (D-10) bloque toutes les routes métier (403) tant qu'il n'est pas fait.
+
+## D-27 — Politique de mot de passe et comptes de démonstration
+Au moins 12 caractères, mélangeant lettres et chiffres ou symboles ; différent de l'actuel. Hash argon2id.
+Comptes de démo (personnages du §2.4) : **option désactivée par défaut** (voir D-30). Créés par `npm run seed`
+uniquement si `DEMO_MOT_DE_PASSE` est renseigné : Paul Bernard (RESPONSABLE), Sarah Lefèvre (ANALYSTE),
+Steven Laurent (ADMIN), domaine `globalretail.example`. Pratique pour préparer une démo, jamais en production.
+
+## D-28 — Actions journalisées (RG-14)
+Codes d'action en MAJUSCULES_SNAKE : `CONNEXION`, `CONNEXION_ECHEC`, `COMPTE_VERROUILLE`,
+`CONNEXION_REFUSEE_VERROUILLAGE`, `DECONNEXION`, `MOT_DE_PASSE_MODIFIE`, `MOT_DE_PASSE_ECHEC`,
+`INITIALISATION_DONNEES`, `COMPTES_DEMO_INITIALISES`, `ADMIN_CREE_EN_LIGNE_DE_COMMANDE`, `UTILISATEUR_CREE`. Toujours via `journaliser()` (masque les clés sensibles,
+IP réelle via `X-Forwarded-For`). Les lots suivants ajoutent leurs codes ici.
+
+## D-29 — Premier administrateur : `npm run creer-admin`
+Une base vide n'a aucun compte. Le premier ADMIN est créé en ligne de commande (`python -m app.creer_admin`) :
+saisie interactive, mot de passe sans écho, jamais dans le code ni dans `.env`, création journalisée
+(`ADMIN_CREE_EN_LIGNE_DE_COMMANDE`). La même commande sert à rétablir un accès administrateur perdu.
+Pas d'inscription libre (sinon n'importe qui pourrait se donner des droits) ni d'auto-promotion du premier inscrit.
+
+## D-30 — Comptes créés par l'administrateur (conforme UC-01)
+Choix de l'équipe : pas d'inscription en libre-service. L'ADMIN crée chaque compte (prénom, nom, e-mail, **rôle**)
+depuis l'écran Utilisateurs (`POST /api/utilisateurs`). Un **mot de passe temporaire** de 16 caractères est
+généré (module `secrets`), affiché **une seule fois** à l'admin et jamais stocké en clair ; `doit_changer_mdp = true`
+impose de le changer à la première connexion (D-10). Création journalisée `UTILISATEUR_CREE` au nom de l'admin.
+E-mail unique sans tenir compte de la casse (409 sinon). Modifier un rôle, désactiver, réinitialiser : lot 7.
